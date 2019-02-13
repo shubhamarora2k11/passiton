@@ -16,18 +16,19 @@
         	<header class="site-header">
                   <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
                     <div class="container">
-                      <a class="navbar-brand mr-4" href="/">My Blog</a>
+                      <a class="navbar-brand mr-4" href="/">Pass It On!</a>
                       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                       </button>
                       <div class="collapse navbar-collapse" id="navbarToggle">
                         <div class="navbar-nav mr-auto">
-                          <a class="nav-item nav-link" href="{{ url_for('main.home') }}">Home</a>
-                          <a class="nav-item nav-link" href="{{ url_for('main.about') }}">About</a>
+                          <a class="nav-item nav-link" href="{{ url_for('main.home') }}">Wall of Fame</a>
+                          <a class="nav-item nav-link" href="{{ url_for('rewards.dashboard') }}">Dashboard</a>
                         </div>
                         <!-- Navbar Right Side -->
                         <div class="navbar-nav">
                           {% if current_user.is_authenticated %}
+                              <a class="nav-item nav-link" href="{{ url_for('rewards.search_associate') }}">Give Reward</a>
                               <a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">New Post</a>
                               <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Account</a>
                               <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Logout</a>
@@ -55,18 +56,33 @@
                       {% block content %}{% endblock %}
                     </div>
                     <div class="col-md-4">
-                      <div class="content-section">
-                        <h3>Our Sidebar</h3>
-                        <p class='text-muted'>You can put any information here you'd like.
-                          <ul class="list-group">
-                            <li class="list-group-item list-group-item-light">Latest Posts</li>
-                            <li class="list-group-item list-group-item-light">Announcements</li>
-                            <li class="list-group-item list-group-item-light">Calendars</li>
-                            <li class="list-group-item list-group-item-light">etc</li>
-                          </ul>
-                        </p>
+                      <div class="content-section"> 
+                        <h3>Leaderboard</h3>
+                        <p class='text-muted'></p>
+                          <table class="table">
+                              <thead>
+                                <tr>
+                                  <th scope="col">User</th>
+                                  <th scope="col">Points</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  {% if counts %}
+                                   {% for count in counts %}
+                                   {% if count.earned > 0 %}
+                                    <tr> 
+                                        <td>{{ count.username }}</td>
+                                        <td>{{ count.earned }}</td>
+                                    </tr>
+                                    {% endif %}
+                                  {% endfor %}
+                                 {% endif%}
+                            
+                              </tbody>
+                         </table>
+                        
                       </div>
-                    </div>
+                    </div> 
                   </div>
             </main>
     		 <!-- jQuery first, then Popper.js, then Bootstrap JS -->

@@ -1,12 +1,16 @@
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask import current_app
-from flaskblog import db, login_manager
 from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'a3071285de7d178a7ab64619baa691ed'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+
+db = SQLAlchemy(app)
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,3 +60,5 @@ class Reward(db.Model):
 	
     def __repr__(self):
         return f"Reward('{self.associate_id}', '{self.reward_points}, '{self.date_of_reward}')"
+    
+    

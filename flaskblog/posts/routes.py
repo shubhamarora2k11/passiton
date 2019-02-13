@@ -4,12 +4,13 @@ from flask import (render_template, url_for, flash,
                    redirect, request, abort, Blueprint)
 from flask_login import current_user, login_required
 from flaskblog import db
-from flaskblog.models import Post
+from flaskblog.models import Post, User
 from flaskblog.posts.forms import PostForm
 
 
 posts = Blueprint('posts', __name__ )
 
+from sqlalchemy import desc
 
 @posts.route('/post/new/' , methods =['GET', 'POST'])
 @login_required
@@ -21,13 +22,16 @@ def new_post():
         db.session.commit()
         flash(f'Your post has been created!', 'success')
         return redirect(url_for('main.home'))
-    return render_template('create_post.html', title='New Post', form=form, legend='New Post')
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('create_post.html', title='New Post', form=form, 
+                           legend='New Post', counts=counts)
 
 @posts.route('/post/<int:post_id>' , methods =['GET', 'POST'])
 #@login_required
 def post(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template('post.html', title=post.title, post=post)
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('post.html', title=post.title, post=post, counts=counts)
     
 @posts.route('/post/<int:post_id>/update' , methods =['GET', 'POST'])
 @login_required
@@ -46,8 +50,10 @@ def update_post(post_id):
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
-        
-    return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
+    
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('create_post.html', title='Update Post', form=form,
+                           legend='Update Post', counts=counts)
 
 @posts.route('/post/<int:post_id>/delete' , methods =['POST'])
 @login_required
@@ -58,7 +64,7 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     flash(f'Your post has been deleted!', 'success')
-        
+    
     return redirect(url_for('main.home'))
 
 

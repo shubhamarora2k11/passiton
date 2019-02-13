@@ -3,7 +3,6 @@
 from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy.dialects.sqlite
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -26,6 +25,7 @@ def create_app(config_class=Config):
     app.config.from_object(Config)
     
     db.init_app(app)
+    #db.app = app
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
@@ -34,7 +34,9 @@ def create_app(config_class=Config):
     from flaskblog.posts.routes import posts
     from flaskblog.main.routes import main
     from flaskblog.errors.handlers import errors
+    from flaskblog.rewards.routes import rewards
     
+    app.register_blueprint(rewards)
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)

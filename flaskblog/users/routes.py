@@ -10,7 +10,8 @@ from flaskblog.users.utils import save_picture, send_reset_email
 
 
 users = Blueprint('users', __name__ )
- 
+
+from sqlalchemy import desc
 
 @users.route('/register', methods =['GET', 'POST'])
 def register():
@@ -18,16 +19,22 @@ def register():
        return redirect(url_for('main.home'))
    form = RegistrationForm()
    if form.validate_on_submit():
-       
+       balance = 0
        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-       user = User(username= form.username.data, email = form.email.data, password= hashed_password)
+       if form.designation.data == 'L' or form.designation.data == 'M' or form.designation.data == 'SSE':
+           balance = 1000
+       user = User(username= form.username.data, email = form.email.data, 
+                   designation= form.designation.data,
+                   password = hashed_password,
+                   balance = balance )
        db.session.add(user)
        db.session.commit()
        
        flash(f'Your account is created. You will now be able to login!', 'success')
        return redirect(url_for('users.login'))
-    
-   return render_template('register.html', title='Register', form=form)
+   
+   counts = User.query.order_by(desc(User.earned)).limit(5)
+   return render_template('register.html', title='Register', form=form, counts=counts)
 
 
 @users.route('/login', methods =['GET', 'POST'])
@@ -51,7 +58,9 @@ def login():
        #    return redirect(url_for('home'))
        #else:
        #    flash(f'Login Unsuccessful. Please check your email and password!', 'danger')
-   return render_template('login.html', title='Login', form=form)
+   
+   counts = User.query.order_by(desc(User.earned)).limit(5)
+   return render_template('login.html', title='Login', form=form, counts=counts)
 
 
 @users.route('/logout')
@@ -79,7 +88,9 @@ def account():
         form.email.data = current_user.email
         
     image_file = url_for('static', filename='profile_pics/'+ current_user.image_file )
-    return render_template('account.html', title='Account', image_file=image_file, form=form )
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('account.html', title='Account', image_file=image_file, 
+                           form=form, counts=counts )
 
 
 @users.route('/user/<string:username>')
@@ -90,7 +101,8 @@ def user_posts(username):
           .order_by(Post.date_posted.desc())\
           .paginate(page=page, per_page=4)
           
-   return render_template('user_posts.html', posts=posts, user=user)
+   counts = User.query.order_by(desc(User.earned)).limit(5)
+   return render_template('user_posts.html', posts=posts, user=user, counts=counts)
 
 
 @users.route('/reset_password' , methods =['GET', 'POST'])
@@ -103,8 +115,9 @@ def reset_request():
         send_reset_email(user)
         flash(f'An email has been sent with instructions to reset your password!', 'info')
         return redirect(url_for('users.login'))
-        
-    return render_template('reset_request.html', title='Reset Password', form=form)
+    
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('reset_request.html', title='Reset Password', form=form, counts=counts)
 
 
 @users.route('/reset_password/<token>' , methods =['GET', 'POST'])
@@ -123,4 +136,5 @@ def reset_token(token):
        flash(f'Your password has been updated. You will now be able to login!', 'success')
        return redirect(url_for('users.login'))
     
-    return render_template('reset_token.html', title='Reset Password', form=form)
+    counts = User.query.order_by(desc(User.earned)).limit(5)
+    return render_template('reset_token.html', title='Reset Password', form=form, counts=counts)
